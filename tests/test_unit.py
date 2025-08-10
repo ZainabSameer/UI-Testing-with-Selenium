@@ -1,14 +1,35 @@
-import sys
-import os
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from fastapi.testclient import TestClient
+from app.main import app, recipes_db 
+import pytest
 
-from app.utils import is_valid_recipe_name
+client = TestClient(app)
 
-def test_valid_name():
-    assert is_valid_recipe_name("Tiramisu") is True
+@pytest.fixture(autouse=True)
+def clear_db():
+    recipes_db.clear()
 
-def test_empty_name():
-    assert is_valid_recipe_name("   ") is False
+def test_get_recipes_empty():
+    response = client.get("/recipes")
+    assert response.status_code == 200
+    assert response.json() == []
 
-def test_name_with_numbers():
-    assert is_valid_recipe_name("Cake123") is False
+def test_post_recipe():
+    recipe = {
+        "id": 1,
+        "name": "Spaghetti Carbonara",
+        "ingredients": ["spaghetti", "eggs", "bacon", "parmesan"]
+    }
+    response = client.post("/recipes", json=recipe)
+    assert response.status_code == 200
+    assert response.json()["name"] == "Spaghetti Carbonara"
+
+def test_delete_recipe():
+    client.post("/recipes", json={
+        "id": 2,
+        "name": "Tacos",
+        "ingredients": ["tortilla", "beef", "cheese", "lettuce"]
+    })
+
+    response = client.delete("/recipes/2")
+    assert response.status_code == 200
+    assert response.json()["name"] == "Tacos"
