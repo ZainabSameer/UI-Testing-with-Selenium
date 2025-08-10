@@ -43,12 +43,40 @@
             max-width: 500px;
             margin: auto;
         }
-        li {
-            background: #e2dbc0;
-            padding: 0.75rem;
-            margin-bottom: 0.5rem;
-            border-radius: 6px;
-        }
+li {
+    background: #e2dbc0;
+    padding: 0.75rem 0.75rem 0.75rem 1rem; /* more left padding for text */
+    margin-bottom: 0.5rem;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 1rem;
+
+    min-height: 40px; /* ensure some height */
+}
+
+button.delete-btn {
+    background: transparent;
+    border: none;
+    color: #a00;
+    font-weight: 700;
+    font-size: 1.4rem; /* slightly bigger */
+    cursor: pointer;
+    padding: 0 6px;
+    border-radius: 4px;
+    transition: color 0.3s ease;
+    flex-shrink: 0; /* keep button size */
+}
+
+button.delete-btn:hover {
+    color: #d9534f;
+    text-decoration: underline;
+}
+
+
+
+
     </style>
 </head>
 <body>
@@ -58,10 +86,11 @@
     </header>
 
     <form id="recipe-form">
-        <input type="number" name="id" placeholder="Recipe ID" required />
-        <input type="text" name="name" placeholder="Recipe Name" required />
-        <input type="text" name="ingredients" placeholder="Ingredients (comma-separated)" required />
-        <button type="submit">Add Recipe</button>
+    <input type="number" id="id" name="id" placeholder="Recipe ID" required />
+    <input type="text" id="name" name="name" placeholder="Recipe Name" required />
+    <input type="text" id="ingredients" name="ingredients" placeholder="Ingredients (comma-separated)" required />
+
+        <button id="submit" type="submit">Add Recipe</button>
     </form>
 
     <h2>Recipe List</h2>
@@ -90,16 +119,35 @@
             loadRecipes();
         });
 
-        async function loadRecipes() {
-            const res = await fetch("/recipes");
-            const recipes = await res.json();
-            list.innerHTML = "";
-            recipes.forEach(recipe => {
-                const li = document.createElement("li");
-                li.textContent = `${recipe.name} – ${recipe.ingredients.join(", ")}`;
-                list.appendChild(li);
-            });
-        }
+async function loadRecipes() {
+        const res = await fetch("/recipes");
+        const recipes = await res.json();
+        list.innerHTML = "";
+
+        recipes.forEach(recipe => {
+            const li = document.createElement("li");
+            li.textContent = `${recipe.name} – ${recipe.ingredients.join(", ")}`;
+
+            const delBtn = document.createElement("button");
+            delBtn.textContent = "×"; 
+            delBtn.className = "delete-btn";
+            delBtn.title = "Delete recipe";
+            delBtn.onclick = async () => {
+                if (confirm(`Delete recipe "${recipe.name}"?`)) {
+                    const deleteRes = await fetch(`/recipes/${recipe.id}`, { method: "DELETE" });
+                    if (deleteRes.ok) {
+                        loadRecipes();
+                    } else {
+                        alert("Failed to delete recipe");
+                    }
+                }
+            };
+
+
+            li.appendChild(delBtn);
+            list.appendChild(li);
+        });
+    }
 
         loadRecipes();
     </script>

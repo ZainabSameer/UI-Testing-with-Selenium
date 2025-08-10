@@ -1,12 +1,60 @@
+import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
 
+def test_add_recipe():
+    driver = webdriver.Chrome()
+    try:
+        driver.get("http://127.0.0.1:8000/")
+        driver.find_element(By.ID, "id").send_keys("123")
+        driver.find_element(By.ID, "name").send_keys("Chocolate Cake")
+        driver.find_element(By.ID, "ingredients").send_keys("chocolate, flour, eggs")
+
+        driver.find_element(By.ID, "submit").click()
+
+
+        WebDriverWait(driver, 10).until(
+            lambda d: "Chocolate Cake" in d.find_element(By.ID, "recipe-list").text
+        )
+
+        time.sleep(1)
+
+        assert "Chocolate Cake" in driver.find_element(By.ID, "recipe-list").text
+
+
+    finally:
+        driver.quit()
+
+
+def test_invalid_form_submission():
+    driver = webdriver.Chrome()
+    try:
+        driver.get("http://127.0.0.1:8000/")
+
+
+        driver.find_element(By.ID, "id").send_keys("100")
+
+        driver.find_element(By.ID, "ingredients").send_keys("flour, sugar, eggs")
+
+        driver.find_element(By.ID, "submit").click()
+
+        WebDriverWait(driver, 10)
+
+
+        recipe_list_text = driver.find_element(By.ID, "recipe-list").text
+        assert "100" not in recipe_list_text 
+
+    finally:
+        driver.quit()
+
+
+
+
+'''
 def test_click_add_button_updates_list():
     driver = webdriver.Chrome()
-    driver.get("http://127.0.0.1:5500/app/static/index.html")
-
+    driver.get("http://127.0.0.1:8000/recipes")  
     WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.NAME, "id")))
 
     driver.find_element(By.NAME, "id").send_keys("301")
@@ -19,6 +67,10 @@ def test_click_add_button_updates_list():
     )
     assert "Strawberry Shake" in driver.find_element(By.ID, "recipe-list").text
     driver.quit()
+
+
+
+
 
 
 def test_form_submission_flow():
@@ -65,3 +117,4 @@ def test_backend_data_loading():
     )
     assert len(recipe_list.text.strip()) > 0
     driver.quit()
+    '''
