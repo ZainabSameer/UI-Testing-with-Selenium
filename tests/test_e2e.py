@@ -125,3 +125,26 @@ def test_multiple_recipes_display():
 
     finally:
         driver.quit()
+
+def test_form_clears_after_submission():
+    driver = webdriver.Chrome()
+    try:
+        driver.get("http://127.0.0.1:8000/")
+
+
+        driver.find_element(By.ID, "id").send_keys("555")
+        driver.find_element(By.ID, "name").send_keys("Clear Form Test")
+        driver.find_element(By.ID, "ingredients").send_keys("egg, cake, oil")
+
+        driver.find_element(By.ID, "submit").click()
+
+        WebDriverWait(driver, 10).until(
+            EC.text_to_be_present_in_element((By.ID, "recipe-list"), "Clear Form Test")
+        )
+
+        assert driver.find_element(By.ID, "id").get_attribute("value") == ""
+        assert driver.find_element(By.ID, "name").get_attribute("value") == ""
+        assert driver.find_element(By.ID, "ingredients").get_attribute("value") == ""
+
+    finally:
+        driver.quit()

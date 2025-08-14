@@ -32,6 +32,7 @@ def add_recipe(recipe: Recipe):
     recipes_db.append(recipe)
     return recipe
 
+
 @app.delete("/recipes/{id}", response_model=Recipe)
 def delete_recipe(id: int):
     for r in recipes_db:

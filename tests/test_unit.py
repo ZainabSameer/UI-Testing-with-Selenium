@@ -1,5 +1,5 @@
 from fastapi.testclient import TestClient
-from app.main import app, recipes_db 
+from app.main import app, recipes_db, get_recipes, add_recipe, delete_recipe ,Recipe
 import pytest
 
 client = TestClient(app)
@@ -7,6 +7,19 @@ client = TestClient(app)
 @pytest.fixture(autouse=True)
 def clear_db():
     recipes_db.clear()
+
+def test_get_recipes_function_empty():
+    assert get_recipes() == []
+
+def test_add_recipe_function():
+    recipe = Recipe(
+        id=10,
+        name="Falafel",
+        ingredients=["chickpeas", "garlic", "parsley"]
+    )
+    result = add_recipe(recipe)
+    assert result.name == "Falafel"
+    assert recipes_db[0].id == 10
 
 def test_get_recipes_empty():
     response = client.get("/recipes")
@@ -29,7 +42,6 @@ def test_delete_recipe():
         "name": "Tacos",
         "ingredients": ["tortilla", "beef", "cheese", "lettuce"]
     })
-
     response = client.delete("/recipes/2")
     assert response.status_code == 200
     assert response.json()["name"] == "Tacos"
